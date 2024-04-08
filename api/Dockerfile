@@ -10,6 +10,8 @@ COPY package-lock.json ./
 RUN npm config set strict-ssl false
 RUN npm install
 
+RUN mkdir /tmp/app_uploads
+
 # Create and define the application's working directory.
 RUN mkdir /usr/src/app
 WORKDIR /usr/src/app

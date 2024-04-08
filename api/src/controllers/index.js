@@ -1,30 +1,50 @@
 const crypto = require('crypto');
+const fs = require('fs');
 const db = require("../models/index.js");
+
 const Sessions = db.sessions;
-const Op = db.Sequelize.Op;
+const uploadDir = '/tmp/app_uploads/';
 
-// minutes
-const sessionExp = process.env.SESSION_EXP;
+module.exports.newId = (req, res) => {
+    const sessionId = crypto.randomBytes(8).toString("hex");
 
-const newSession = (req, res) => {
-    const sessionID = crypto.randomBytes(8).toString("hex");
-    const session = {
-      session_id: sessionID,
-      status: "entered"
-    };
-
-    Sessions.create(session)
-      .then(data => {
+    Sessions.create({
+        session_id: sessionId,
+        status: "entered"
+    })
+    .then(data => {
         res.json(data);
-      })
-      .catch(err => {
+    })
+    .catch(err => {
         res.status(500).json({
-          message: err.message || "Some error occurred while creating new session."
+            message: err.message || "Some error occurred while creating new session id."
         });
-      });
+    });
 };
 
-const sessionStatus = (req, res) => {
+module.exports.idStatus = (req, res) => {
+    res.status(500).json({
+        message: "Service not available"
+    });
 };
 
-module.exports = {newSession};
+module.exports.upload = (req, res) => {
+    const sessionId = req.params.id;
+
+    Sessions.update(
+        { status: "uploaded" },
+        { where: { session_id: sessionId }}
+    )
+    .then(data => {
+        res.json(data);
+    })
+    .catch(err => {
+        fs.unlink(uploadDir + sessionId, (err) => {
+            if (err) 
+                console.error('Error deleting file ' + sessionId + ' ' + err);
+        });
+        res.status(500).json({
+            message: err.message || "Some error occurred while updating session status."
+        });
+    });
+};

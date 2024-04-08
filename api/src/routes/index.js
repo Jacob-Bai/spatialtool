@@ -1,16 +1,17 @@
 var router = require('express').Router();
 
 const api = require('../controllers/index.js');
+const mid = require('../middleware/index.js');
 
 // .com/id
-router.get('/id', api.newSession);
+router.get('/id', api.newId);
 // .com/status?id=...
-//router.get('/status', api.sessionStatus);
-// .com/id?id=...
-//router.delete('/id', api.closeSession);
-// .com/video?id=...
-//router.post('/video', api.uploadVideo);
-// .com/video?id=...
-//router.get('/video', api.downloadVideo);
+router.get('/status', api.idStatus);
+// .com/delete/:id
+//router.delete('/delete/:id', api.delete);
+// .com/upload/:id
+router.post('/upload/:id', mid.upload, api.upload);
+// .com/download?id=...
+//router.get('/download', api.download);
 
 module.exports = router;

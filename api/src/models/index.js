@@ -22,6 +22,5 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 db.sessions = require("./sessions.model.js")(sequelize, Sequelize);
-//db.history = require("./history.model.js")(sequelize, Sequelize);
 
 module.exports = db;

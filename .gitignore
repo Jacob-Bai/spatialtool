@@ -1,4 +1,4 @@
 .env
 db/data
 api/node_modules
-
+uploads/*

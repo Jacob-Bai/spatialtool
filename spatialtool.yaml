@@ -49,6 +49,7 @@ services:
       - api-db-network
     volumes:
       - ./api:/usr/src/app
+      - ./uploads:/tmp/app_uploads
     command: /usr/src/app/init.sh
     
 networks:
