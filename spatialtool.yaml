@@ -1,0 +1,56 @@
+version: '3.8'
+services:
+  web:
+    build: ./web
+    restart: always
+    ports:
+      - ${WEB_LOCAL_PORT}:${WEB_DOCKER_PORT}
+    volumes:
+      - ./web/www:/var/www/html
+
+  db:
+    build: ./db
+    restart: always
+    ports:
+      - ${DB_LOCAL_PORT}:${DB_DOCKER_PORT}
+    # set shared memory limit when using docker-compose
+    # shm_size: 128mb
+    # or set shared memory limit when deploy via swarm stack
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
+    networks:
+      - api-db-network
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_NAME}
+  
+  api:
+    depends_on:
+      - db
+    build: ./api
+    restart: always
+    ports:
+      - ${API_LOCAL_PORT}:${API_DOCKER_PORT}
+    environment:
+      - DB_HOST=db
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PORT=${DB_DOCKER_PORT}
+      - API_PORT=${API_DOCKER_PORT}
+      - SESSION_EXP=${SESSION_EXP}
+    networks:
+      - api-db-network
+    volumes:
+      - ./api:/usr/src/app
+    command: /usr/src/app/init.sh
+    
+networks:
+  api-db-network:
+    driver: bridge

@@ -1,0 +1,1 @@
+docker compose -f spatialtool.yaml up --force-recreate --build
