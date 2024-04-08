@@ -1,1 +1,5 @@
+#!/bin/bash
+
+mkdir -p db/data
+mkdir -p uploads
 docker compose -f spatialtool.yaml up --force-recreate --build
