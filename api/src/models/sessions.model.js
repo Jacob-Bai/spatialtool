@@ -10,6 +10,10 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: false,
         unique: true
     },
+    file_name: Sequelize.STRING(100),
+    file_format: Sequelize.STRING(5),
+    src_file_type: Sequelize.STRING(10),
+    dst_file_type: Sequelize.STRING(10),
     created_at: {
         type: 'TIMESTAMP',
         // defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),

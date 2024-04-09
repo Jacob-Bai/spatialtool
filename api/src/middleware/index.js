@@ -1,13 +1,16 @@
 const multer = require('multer');
+const fs = require('fs');
 const db = require("../models/index.js");
+const uploadDir = '/tmp/app_uploads/';
 
 const Sessions = db.sessions;
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, '/tmp/app_uploads');
+        cb(null, uploadDir);
     },
-    filename: (req, file, cb) => {
+    filname: (req, file, cb) => {
+        // use sessionId as filename
         cb(null, req.params.id);
     }
 });
@@ -19,14 +22,14 @@ module.exports.upload = (req, res, next) => {
     const sessionId = req.params.id;
     Sessions.findOne({
         where: {
-            session_id: sessionId, 
+            session_id: sessionId,
             status: "entered"
          }
     })
     .then(found => {
-        if (found)
+        if (found) {
             fileUpload.any()(req, res, next)
-        else
+        } else
             res.status(500).json({
                 message: "Id is not valid or file uploaded already"
             });
