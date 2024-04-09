@@ -1,26 +1,26 @@
 const express = require('express');
 const routes = require('./routes/index.js');
-
-const app = express();
-app.use(express.json());
-app.use('/', routes);
-
 const db = require("./models/index.js");
-db.sequelize.authenticate().then(() => {
+const app = express();
+
+db.sequelize.authenticate()
+.then(() => {
     console.log('Connection has been established successfully.');
-  }).catch(err => {
-    console.log('Unable to connect to the database:', err);
-  });
+}).catch(err => {
+    console.log('Unable to connect to the database:' + err.message);
+});
 
 db.sequelize.sync()
-  .then(() => {
+.then(() => {
     console.log("Connected and Synced db.");
-  })
-  .catch((err) => {
+})
+.catch(err => {
     console.log("Failed to sync db: " + err.message);
-  });
+});
 
 const port = process.env.API_PORT||5001;
+app.use(express.json());
+app.use('/', routes);
 app.listen(port, () => {
-  console.log(`Listening on port ${port}`)
+    console.log(`Listening on port ${port}`)
 });
