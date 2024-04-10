@@ -29,12 +29,11 @@ module.exports.newId = async (req, res) => {
             file_format: fileFormat,
             status: "entered"
         });
+        res.json({ id: sessionId });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Failed getting new session id." });
-    } finally {
-        res.json({ status: "entered" })
-    }
+    };
 };
 
 module.exports.idStatus = async (req, res) => {
@@ -42,13 +41,13 @@ module.exports.idStatus = async (req, res) => {
         const sessionId = req.query.id;
         const session = await Sessions.findOne({ where: { session_id: sessionId } });
         if (session)
-            res.json({ status: found.status });
+            res.json({ status: session.status });
         else
             throw new Error("Id status not valid.");
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Failed getting session id status." });
-    }
+    };
 };
 
 module.exports.upload = async (req, res) => {
@@ -57,18 +56,17 @@ module.exports.upload = async (req, res) => {
             throw new Error("File not received.");
 
         const sessionId = req.params.id;
-        const row = await Sessions.update(
-            { status: "uploaded" },
-            { where: { session_id: sessionId } }
-        )
+        const row = await Sessions.update({ 
+                status: "uploaded" }, {
+                where: { session_id: sessionId } 
+            })
         if (row === 0)
             throw new Error("Id status updating failed.");
-
+        
+        res.json({ status: "uploaded" });
     } catch (err) {
-        fs.unlink(uploadDir + req.query.id);
+        fs.unlink(uploadDir + req.params.id, (err) => err && console.error(err));
         console.error(err);
         res.status(500).json({ message: "Failed uploading file." });
-    } finally {
-        res.json({ status: "uploaded" });
     };
 };
