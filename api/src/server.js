@@ -1,6 +1,8 @@
+const cron =  require('cron');
 const express = require('express');
 const routes = require('./routes/index.js');
 const db = require("./models/index.js");
+const managers = require('./managers/index.js'); 
 
 db.sequelize.authenticate()
 .then(() => {
@@ -10,6 +12,9 @@ db.sequelize.authenticate()
     console.log('Unable to connect to the database:' + err.message);
     process.exit(1);
 });
+
+const job = new cron.CronJob(" * * * * * ", managers.sessionManager);
+job.start();
 
 const app = express();
 const port = process.env.API_PORT||5001;

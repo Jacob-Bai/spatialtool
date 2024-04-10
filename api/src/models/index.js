@@ -22,5 +22,14 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 db.sessions = require("./sessions.model.js")(sequelize, Sequelize);
+db.closeSession = async function(sessionId) {
+    await this.sessions.update({ 
+        status: "closed", 
+        // let session_id = id
+        session_id: db.sequelize.literal('id') }, {
+        where: { session_id: sessionId }
+    })
+    console.log(`${sessionId} closed`);
+}
 
 module.exports = db;
