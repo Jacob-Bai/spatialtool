@@ -3,7 +3,7 @@ const fs = require('fs');
 const db = require("../models/index.js");
 
 const Sessions = db.sessions;
-const uploadDir = '/tmp/app_uploads/';
+const uploadDir = process.env.UPLOADS_DIR;
 
 module.exports.newId = (req, res) => {
     if (!req.body.file_name || !req.body.file_format) {

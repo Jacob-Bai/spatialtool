@@ -1,7 +1,7 @@
 const multer = require('multer');
 const fs = require('fs');
 const db = require("../models/index.js");
-const uploadDir = '/tmp/app_uploads/';
+const uploadDir = process.env.UPLOADS_DIR;
 
 const Sessions = db.sessions;
 
