@@ -1,5 +1,4 @@
 const multer = require('multer');
-const fs = require('fs');
 const db = require("../models/index.js");
 const uploadDir = process.env.UPLOADS_DIR;
 
@@ -17,26 +16,16 @@ const storage = multer.diskStorage({
 
 const fileUpload = multer({ storage });
 
-module.exports.upload = (req, res, next) => {
-    // validate session id before proceed
-    const sessionId = req.params.id;
-    Sessions.findOne({
-        where: {
-            session_id: sessionId,
-            status: "entered"
-         }
-    })
-    .then(found => {
-        if (found) {
-            fileUpload.any()(req, res, next)
-        } else
-            res.status(500).json({
-                message: "Id is not valid or file uploaded already"
-            });
-    })
-    .catch(err => {
-        res.status(500).json({
-            message: err.message || "Something wrong when validating session id"
-        });
-    });
+module.exports.upload = async (req, res, next) => {
+    try {
+        // validate session id before proceed
+        const sessionId = req.params.id;
+        const session = await Sessions.findOne({ where: { session_id: sessionId, status: "entered" } });
+        if (session === 0) 
+            throw new Error("Id is not valid or file uploaded already");
+    } catch(err) {
+        res.status(500).json({ message: "Failed uploading file" });
+    } finally {
+        fileUpload.any()(req, res, next);
+    }
 };
