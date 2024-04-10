@@ -50,6 +50,25 @@ module.exports.idStatus = async (req, res) => {
     };
 };
 
+module.exports.delete = async (req, res) => {
+    try {
+        const sessionId = req.params.id;
+        const row = await Sessions.update({ 
+                status: "converted" }, {
+                where: { session_id: sessionId } 
+            })
+        if (row === 0)
+            throw new Error("File not uploaded or converted yet.");
+        
+        fs.unlink(uploadDir + sessionId, (err) => err && console.error(err));
+        await db.closeSession(sessionId);
+        res.json({ status: "deleted" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Failed deleting file." });
+    }; 
+}
+
 module.exports.upload = async (req, res) => {
     try {
         if (!req.file)
