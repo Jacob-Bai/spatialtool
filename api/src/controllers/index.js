@@ -54,12 +54,13 @@ module.exports.idStatus = async (req, res) => {
 module.exports.delete = async (req, res) => {
     try {
         const sessionId = req.params.id;
-        const row = await Sessions.update({ 
-                status: "converted" }, {
-                where: { session_id: sessionId } });
+        const session = await Sessions.findOne({ 
+            where: { 
+                session_id: sessionId, 
+                status: "converted" } });
 
-        if (row === 0)
-            throw new Error("File not uploaded or converted yet.");
+        if (!session)
+            throw new Error("File not converted yet.");
         
         fs.unlink(uploadDir + sessionId, (err) => err && console.error(err));
         await db.closeSession(sessionId);
@@ -84,7 +85,7 @@ module.exports.upload = async (req, res) => {
             throw new Error("Id status updating failed.");
         
         managers.fileConverter(sessionId);
-        res.json({ status: "uploaded" });
+        res.json({ status: "converting" });
     } catch (err) {
         fs.unlink(uploadDir + req.params.id, (err) => err && console.error(err));
         console.error(err);
@@ -95,16 +96,16 @@ module.exports.upload = async (req, res) => {
 module.exports.download = async (req, res) => {
     try {
         const sessionId = req.params.id;
-        const session = await Sessions.findOne({ 
-            where: { 
-                session_id: sessionId,
-                status: "converted" } 
-            });
-        if (!session)
-            throw new Error("Id status not valid.");
+        const [row, session] = await Sessions.update({ 
+            status: "downloading" },{
+            where: { session_id: sessionId, status: "converted" },
+            returning: true });
 
+        if (row === 0)
+            throw new Error("Id not ready for download.");
+        
         if (!fs.existsSync(uploadDir + sessionId)) {
-            await db.closeSession(sessionId);
+            db.closeSession(sessionId);
             throw new Error("File not exist")
         }
 
@@ -114,6 +115,10 @@ module.exports.download = async (req, res) => {
             (err) => { 
                 if (err) {
                     console.error(err);
+                    // roll back
+                    Sessions.update({ 
+                        status: "converted" },{
+                        where: { session_id: sessionId } });
                 } else {
                     fs.unlink(uploadDir + req.params.id, (err) => err && console.error(err));
                     db.closeSession(sessionId);

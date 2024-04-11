@@ -15,22 +15,22 @@ const storage = multer.diskStorage({
     }
 });
 
-const fileUpload = multer({ storage ,
-    onError : function(err, next) {
-        console.log('error', err);
-        next(err);
-      }});
+const fileUpload = multer({ storage });
 
 module.exports.upload = async (req, res, next) => {
     try {
         // validate session id before proceed
         const sessionId = req.params.id;
-        const session = await Sessions.findOne({ where: { session_id: sessionId, status: "entered" } });
-        if (!session) 
+        const row = await Sessions.update({ 
+            status: "uploading" }, {
+            where: { session_id: sessionId, status: "entered" } });
+
+        if (row === 0) 
             throw new Error("Id is not valid or file uploaded already");
 
         fileUpload.single(sessionId)(req, res, next);
     } catch(err) {
+        console.error(err);
         res.status(500).json({ message: "Failed uploading file" });
     };
 };
