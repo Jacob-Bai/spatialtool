@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const db = require("../models/index.js");
+const managers = require("../managers/index.js");
 
 const Sessions = db.sessions;
 const uploadDir = process.env.UPLOADS_DIR;
@@ -82,6 +83,7 @@ module.exports.upload = async (req, res) => {
         if (row === 0)
             throw new Error("Id status updating failed.");
         
+        managers.videoConverter(sessionId);
         res.json({ status: "uploaded" });
     } catch (err) {
         fs.unlink(uploadDir + req.params.id, (err) => err && console.error(err));

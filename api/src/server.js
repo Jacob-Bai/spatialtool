@@ -1,4 +1,3 @@
-const cron =  require('cron');
 const express = require('express');
 const routes = require('./routes/index.js');
 const db = require("./models/index.js");
@@ -13,8 +12,7 @@ db.sequelize.authenticate()
     process.exit(1);
 });
 
-const job = new cron.CronJob(" * * * * * ", managers.sessionManager);
-job.start();
+managers.sessionManager.start();
 
 const app = express();
 const port = process.env.API_PORT||5001;
