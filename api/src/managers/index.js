@@ -18,12 +18,15 @@ module.exports.sessionManager = new cron.CronJob(" * * * * * ", async () => {
             session = await Sessions.findOne({
                 where: {
                     updated_at: { [Op.lt]: db.Sequelize.literal(`NOW() - (INTERVAL '${expireTime} MINUTE')`) },
-                    [Op.or] : [{ status: "entered" }, { status: "converted" } ]} });              
+                    [Op.or] : [{ status: "entered" }, { status: "converted" } ]
+                } 
+            });              
                     
             if (session) {
                 const row = await Sessions.update({ 
                     status: "closed" }, {
-                    where: { session_id: session_id, status: session.status } });
+                    where: { session_id: session_id, status: session.status } 
+                });
                 if (row === 0) {
                     console.log(`${session.session_id} moved status`);
                     continue;
@@ -49,7 +52,8 @@ eventEmitter.on('convert', async (sessionId) => {
 
         const row1 = await Sessions.update({ 
             status: "converting" }, {
-            where: { session_id: sessionId } });
+            where: { session_id: sessionId } 
+        });
         if (row1 === 0) {
             throw new Error("DB update status to converting error")
         }
@@ -61,7 +65,8 @@ eventEmitter.on('convert', async (sessionId) => {
         fs.renameSync(uploadDir + sessionId + "-done", uploadDir + sessionId);
         const row2 = await Sessions.update({ 
             status: "converted" }, {
-            where: { session_id: sessionId } });
+            where: { session_id: sessionId } 
+        });
         if (row2 === 0) {
             throw new Error("DB update status to converted error")
         }

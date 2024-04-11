@@ -23,11 +23,13 @@ module.exports.upload = async (req, res, next) => {
         const sessionId = req.params.id;
         const row = await Sessions.update({ 
             status: "uploading" }, {
-            where: { session_id: sessionId, status: "entered" } });
+            where: { session_id: sessionId, status: "entered" } 
+        });
 
-        if (row === 0) 
+        if (row === 0) {
             throw new Error("Id is not valid or file uploaded already");
-
+        }
+        
         fileUpload.single(sessionId)(req, res, next);
     } catch(err) {
         console.error(err);

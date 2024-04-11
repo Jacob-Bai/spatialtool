@@ -28,7 +28,8 @@ module.exports.newId = async (req, res) => {
             session_id: sessionId,
             file_name: fileName,
             file_format: fileFormat,
-            status: "entered" });
+            status: "entered" 
+        });
             
         res.json({ id: sessionId });
     } catch (err) {
@@ -41,10 +42,11 @@ module.exports.idStatus = async (req, res) => {
     try {
         const sessionId = req.query.id;
         const session = await Sessions.findOne({ where: { session_id: sessionId } });
-        if (session)
+        if (session) {
             res.json({ status: session.status });
-        else
+        } else {
             throw new Error("Id status not valid.");
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Failed getting session id status." });
@@ -57,11 +59,14 @@ module.exports.delete = async (req, res) => {
         const session = await Sessions.findOne({ 
             where: { 
                 session_id: sessionId, 
-                status: "converted" } });
+                status: "converted" 
+            } 
+        });
 
-        if (!session)
+        if (!session) {
             throw new Error("File not converted yet.");
-        
+        }
+
         fs.unlink(uploadDir + sessionId, (err) => err && console.error(err));
         await db.closeSession(sessionId);
         res.json({ status: "deleted" });
@@ -73,17 +78,20 @@ module.exports.delete = async (req, res) => {
 
 module.exports.upload = async (req, res) => {
     try {
-        if (!req.file)
+        if (!req.file) {
             throw new Error("File not received.");
+        }
 
         const sessionId = req.params.id;
         const row = await Sessions.update({ 
-                status: "uploaded" }, {
-                where: { session_id: sessionId } });
+            status: "uploaded" }, {
+            where: { session_id: sessionId } 
+        });
 
-        if (row === 0)
+        if (row === 0) {
             throw new Error("Id status updating failed.");
-        
+        }
+
         managers.fileConverter(sessionId);
         res.json({ status: "converting" });
     } catch (err) {
@@ -97,16 +105,18 @@ module.exports.download = async (req, res) => {
     try {
         const sessionId = req.params.id;
         const [row, session] = await Sessions.update({ 
-            status: "downloading" },{
+            status: "downloading" }, {
             where: { session_id: sessionId, status: "converted" },
-            returning: true });
+            returning: true 
+        });
 
-        if (row === 0)
+        if (row === 0) {
             throw new Error("Id not ready for download.");
-        
+        }
+
         if (!fs.existsSync(uploadDir + sessionId)) {
             db.closeSession(sessionId);
-            throw new Error("File not exist")
+            throw new Error("File not exist");
         }
 
         res.download(
@@ -123,7 +133,8 @@ module.exports.download = async (req, res) => {
                     fs.unlink(uploadDir + req.params.id, (err) => err && console.error(err));
                     db.closeSession(sessionId);
                 } 
-            });
+            }
+        );
 
     } catch (err) {
         console.error(err);
