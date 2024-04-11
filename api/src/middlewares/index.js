@@ -29,7 +29,7 @@ module.exports.upload = async (req, res, next) => {
         if (!session) 
             throw new Error("Id is not valid or file uploaded already");
 
-        fileUpload.single(sessionId)(req, res, next)
+        fileUpload.single(sessionId)(req, res, next);
     } catch(err) {
         res.status(500).json({ message: "Failed uploading file" });
     };

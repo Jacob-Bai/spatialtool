@@ -11,7 +11,7 @@ router.get('/status', api.idStatus);
 router.delete('/video/:id', api.delete);
 // .com/video/:id
 router.post('/video/:id', mid.upload, api.upload);
-// .com/download?id=...
-//router.get('/download', api.download);
+// .com/video?id=...
+router.get('/video/:id', api.download);
 
 module.exports = router;

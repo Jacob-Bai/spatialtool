@@ -27,8 +27,8 @@ module.exports.newId = async (req, res) => {
             session_id: sessionId,
             file_name: fileName,
             file_format: fileFormat,
-            status: "entered"
-        });
+            status: "entered" });
+            
         res.json({ id: sessionId });
     } catch (err) {
         console.error(err);
@@ -55,8 +55,8 @@ module.exports.delete = async (req, res) => {
         const sessionId = req.params.id;
         const row = await Sessions.update({ 
                 status: "converted" }, {
-                where: { session_id: sessionId } 
-            })
+                where: { session_id: sessionId } });
+
         if (row === 0)
             throw new Error("File not uploaded or converted yet.");
         
@@ -77,8 +77,8 @@ module.exports.upload = async (req, res) => {
         const sessionId = req.params.id;
         const row = await Sessions.update({ 
                 status: "uploaded" }, {
-                where: { session_id: sessionId } 
-            })
+                where: { session_id: sessionId } });
+
         if (row === 0)
             throw new Error("Id status updating failed.");
         
@@ -89,3 +89,37 @@ module.exports.upload = async (req, res) => {
         res.status(500).json({ message: "Failed uploading file." });
     };
 };
+
+module.exports.download = async (req, res) => {
+    try {
+        const sessionId = req.params.id;
+        const session = await Sessions.findOne({ 
+            where: { 
+                session_id: sessionId,
+                status: "converted" } 
+            });
+        if (!session)
+            throw new Error("Id status not valid.");
+
+        if (!fs.existsSync(uploadDir + sessionId)) {
+            await db.closeSession(sessionId);
+            throw new Error("File not exist")
+        }
+
+        res.download(
+            uploadDir + sessionId, 
+            session.file_name + '.' + session.file_format, 
+            (err) => { 
+                if (err) {
+                    console.error(err);
+                } else {
+                    fs.unlink(uploadDir + req.params.id, (err) => err && console.error(err));
+                    db.closeSession(sessionId);
+                } 
+            });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Failed downloading file." });
+    }
+}
