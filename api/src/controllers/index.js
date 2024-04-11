@@ -83,7 +83,7 @@ module.exports.upload = async (req, res) => {
         if (row === 0)
             throw new Error("Id status updating failed.");
         
-        managers.videoConverter(sessionId);
+        managers.fileConverter(sessionId);
         res.json({ status: "uploaded" });
     } catch (err) {
         fs.unlink(uploadDir + req.params.id, (err) => err && console.error(err));

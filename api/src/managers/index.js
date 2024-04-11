@@ -65,6 +65,6 @@ eventEmitter.on('convert', async (sessionId) => {
     }
 });
 
-module.exports.videoConverter = (sessionId) => {
+module.exports.fileConverter = (sessionId) => {
     eventEmitter.emit("convert", sessionId);
 }
