@@ -11,8 +11,8 @@ module.exports.sessionManager = async () => {
         const found = await Sessions.findAll({
             where: {
                 updated_at: { [Op.lt]: db.Sequelize.literal(`NOW() - (INTERVAL '${expireTime} MINUTE')`) },
-                status: { [Op.ne]: "closed" } }
-            })
+                [Op.or] : [{ status: "entered" }, { status: "converted" } ]} });              
+                
         if (found) {
             for(const session of found) {
                 console.log(`${session.session_id} will be closed with status ${session.status}`);
