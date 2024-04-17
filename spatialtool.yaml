@@ -6,7 +6,7 @@ services:
     ports:
       - ${WEB_LOCAL_PORT}:${WEB_DOCKER_PORT}
     volumes:
-      - ./web/www:/var/www/html
+      - ./web/build:/var/www/html
 
   db:
     build: ./db

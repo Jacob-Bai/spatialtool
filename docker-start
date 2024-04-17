@@ -1,5 +1,9 @@
 #!/bin/bash
 
+cd web/
+npm install
+npm run build
+cd ../
 mkdir -p db/data
 mkdir -p uploads
 docker compose -f spatialtool.yaml up --force-recreate --build
