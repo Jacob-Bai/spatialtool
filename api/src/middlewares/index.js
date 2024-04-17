@@ -33,6 +33,6 @@ module.exports.upload = async (req, res, next) => {
         fileUpload.single(sessionId)(req, res, next);
     } catch(err) {
         console.error(err);
-        res.status(500).json({ message: "Failed uploading file" });
+        res.status(500).json({ status: "failed" });
     };
 };

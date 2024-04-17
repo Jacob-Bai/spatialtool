@@ -34,7 +34,7 @@ module.exports.newId = async (req, res) => {
         res.json({ id: sessionId });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Failed getting new session id." });
+        res.status(500).json({ id: 0 });
     };
 };
 
@@ -49,7 +49,7 @@ module.exports.idStatus = async (req, res) => {
         }
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Failed getting session id status." });
+        res.json({ status: "closed" });
     };
 };
 
@@ -72,7 +72,7 @@ module.exports.delete = async (req, res) => {
         res.json({ status: "deleted" });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Failed deleting file." });
+        res.status(500).json({ status: "failed" });
     }; 
 }
 
@@ -97,7 +97,7 @@ module.exports.upload = async (req, res) => {
     } catch (err) {
         fs.unlink(uploadDir + req.params.id, (err) => err && console.error(err));
         console.error(err);
-        res.status(500).json({ message: "Failed uploading file." });
+        res.status(500).json({ status: "failed" });
     };
 };
 
@@ -138,6 +138,6 @@ module.exports.download = async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Failed downloading file." });
+        res.status(500).json({ status: "failed" });
     }
 }
