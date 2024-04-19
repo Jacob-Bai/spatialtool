@@ -1,64 +1,90 @@
 import { Dropzone, FileMosaic } from "@files-ui/react";
-import * as React from "react";
-import './style.css';
+import { useCookies } from 'react-cookie';
+import React, { useState, useEffect } from "react";
 
-const BASE_URL = "https://www.myserver.com";
 
-function FileDropzone() {
-    const [extFiles, setextFiles] = React.useState([]);
-
-    const updateFile = (files) => {
-        setextFiles(files);
-    };
-    const handleStart = (filesToUpload) => {
-        console.log("advanced demo start upload", filesToUpload);
-    };
-    const handleFinish = (uploadedFiles) => {
-        console.log("advanced demo finish upload", uploadedFiles);
-    };
-    return (
-        <div className="dropbox">
-            <Dropzone
-                onChange={updateFile}
-                minHeight="210px"
-                value={extFiles}
-                maxFiles={1}
-                maxFileSize={500 * 1024 * 1024}
-                label="Drop file here or click to browse"
-                accept=".avi,.mp4,.mov"
-                uploadConfig={{
-                    // autoUpload: true
-                    url: BASE_URL + "/file",
-                    cleanOnUpload: true,
-                    uploadingMessage: "uploading test"
-                }}
-                onUploadStart={handleStart}
-                onUploadFinish={handleFinish}
-                fakeUpload
-                actionButtons={{
-                    position: "after",
-                    uploadButton: { resetStyles: true, className: "upload-button" }
-                }}
-                behaviour="replace"
-            >
-                {extFiles.map((file) => (
-                    <FileMosaic {...file} />
-                ))}
-            </Dropzone>
-        </div>
-    );
-}
+const API_URL = "/v1";
 
 function handleDownload() { }
 function handleDelete() { }
 
-export default function main() {
+export default function MainPage() {
+
+    let sessionStatus = "empty";
+    const [cookies, setCookie] = useCookies(['sessionId']);
+    const [extFiles, setExtFiles] = useState([]);
+
+    const getSessionId = async () => {
+        try {
+            const res = await fetch(API_URL + '/id');
+            if (!res.ok) {
+                throw new Error('Getting new id failed');
+            }
+            const resBody = await res.json();
+            setCookie('sessionId', resBody.id, {maxAge: 3600});
+        }
+        catch (err) {
+            console.error(err);
+        }
+    }
+    const getSessionStatus = async () => {
+        try {
+            const res = await fetch(API_URL + '/status?id=' + cookies.sessionId);
+            if (!res.ok) {
+                throw new Error('Getting status failed');
+            }
+            const resBody = await res.json();
+            sessionStatus = resBody.status;
+            console.log(sessionStatus);
+        }
+        catch (err) {
+            console.error(err);
+        }
+    }
+    const updateFile = (files) => {
+        setExtFiles(files);
+    };
+    const handleStart = async (filesToUpload) => {
+        console.log("advanced demo start upload id:", cookies.sessionId);
+    };
+    const handleFinish = (uploadedFiles) => {
+        console.log("advanced demo finish upload", uploadedFiles);
+    };
+
+    if (cookies.sessionId) {
+        getSessionStatus();
+    } else {
+        getSessionId();
+    }
+
     return (
         <section className="main-sec">
             <div className="container">
                 <h1 className="heading">Spatial Tool</h1>
                 <p className="description">Convert Side-By-Side 3D video to Spatial video</p>
-                <FileDropzone />
+                <div className="dropbox">
+                    <Dropzone minHeight="210px" maxFiles={1} maxFileSize={500 * 1024 * 1024}
+                        onChange={updateFile} value={extFiles} accept=".avi,.mp4,.mov"
+                        label="Drop file here or click to browse"
+                        uploadConfig={{
+                            url: API_URL + "/video/" + cookies.sessionId,
+                            uploadLabel: cookies.sessionId,
+                            cleanOnUpload: true,
+                            uploadingMessage: "uploading test"
+                        }}
+                        footerConfig={{uploadProgressMessage: false}}
+                        onUploadStart={handleStart}
+                        onUploadFinish={handleFinish}
+                        actionButtons={{
+                            position: "after",
+                            uploadButton: { resetStyles: true, className: "upload-button" }
+                        }}
+                        behaviour="replace" >
+                        {extFiles.map((file) => (
+                            <FileMosaic {...file} />
+                        ))}
+                    </Dropzone>
+                </div>
                 <button className="button" onClick={handleDownload}>Download</button>
                 <button className="button" onClick={handleDelete}>Delete</button>
                 <div className="note">
