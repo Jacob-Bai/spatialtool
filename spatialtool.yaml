@@ -1,10 +1,14 @@
 version: '3.8'
 services:
   web:
+    depends_on: 
+      - api
     build: ./web
     restart: always
     ports:
       - ${WEB_LOCAL_PORT}:${WEB_DOCKER_PORT}
+    networks:
+      - web-api-network
     volumes:
       - ./web/build:/var/www/html
 
@@ -48,6 +52,7 @@ services:
       - UPLOADS_DIR=/tmp/app_uploads/
     networks:
       - api-db-network
+      - web-api-network
     volumes:
       - ./api:/usr/src/app
       - ./uploads:/tmp/app_uploads
@@ -55,4 +60,6 @@ services:
     
 networks:
   api-db-network:
+    driver: bridge
+  web-api-network:
     driver: bridge
