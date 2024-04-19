@@ -8,26 +8,10 @@ const uploadDir = process.env.UPLOADS_DIR;
 
 module.exports.newId = async (req, res) => {
     try {
-        if (!req.body.file_name || !req.body.file_format) {
-            throw new Error("File name or format is missing.");
-        }
-
-        // TODO: replace number with env or config
-        const fileName = req.body.file_name.trim().substring(0, 100);
-        const fileFormat = req.body.file_format.trim().toLowerCase();
-        if (fileName === "" || fileFormat === "") {
-            throw new Error("File name or format is empty.");
-        }
-
-        if (fileFormat !== "avi" && fileFormat !== "mp4") {
-            throw new Error("File format not supported.");
-        }
 
         const sessionId = crypto.randomBytes(8).toString("hex");
         await Sessions.create({
             session_id: sessionId,
-            file_name: fileName,
-            file_format: fileFormat,
             status: "entered" 
         });
             
