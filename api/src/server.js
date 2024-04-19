@@ -17,7 +17,7 @@ managers.sessionManager.start();
 const app = express();
 const port = process.env.API_PORT||5001;
 app.use(express.json());
-app.use('/', routes);
+app.use('/v1', routes);
 app.listen(port, () => {
     console.log(`Listening on port ${port}`)
 });
