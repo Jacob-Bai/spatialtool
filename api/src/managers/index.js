@@ -25,7 +25,7 @@ module.exports.sessionManager = new cron.CronJob(" * * * * * ", async () => {
             if (session) {
                 const row = await Sessions.update({ 
                     status: "closed" }, {
-                    where: { session_id: session_id, status: session.status } 
+                    where: { session_id: session.session_id, status: session.status } 
                 });
                 if (row === 0) {
                     console.log(`${session.session_id} moved status`);
