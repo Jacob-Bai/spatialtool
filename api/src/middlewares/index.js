@@ -10,7 +10,6 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         // use sessionId as filename
-        console.log("filename:"+req.params.id);
         cb(null, req.params.id);
     }
 });
