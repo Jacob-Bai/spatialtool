@@ -24,7 +24,8 @@ module.exports.sessionManager = new cron.CronJob(" * * * * * ", async () => {
                     
             if (session) {
                 const row = await Sessions.update({ 
-                    status: "closed" }, {
+                    status: "closed",
+                    session_id: db.sequelize.literal('id') }, {
                     where: { session_id: session.session_id, status: session.status } 
                 });
                 if (row === 0) {
