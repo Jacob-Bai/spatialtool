@@ -62,7 +62,6 @@ module.exports.delete = async (req, res) => {
 
 module.exports.upload = async (req, res) => {
     try {
-        console.log(req.file);
         const sessionId = req.params.id;
         if (!req.file) {
             await Sessions.update({ 
