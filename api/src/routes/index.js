@@ -12,6 +12,6 @@ router.delete('/video/:id', api.delete);
 // .com/video/:id
 router.post('/video/:id', mid.upload, api.upload);
 // .com/video?id=...
-router.get('/video/:id', api.download);
+router.get('/video', api.download);
 
 module.exports = router;

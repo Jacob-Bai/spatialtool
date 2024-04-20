@@ -62,13 +62,21 @@ module.exports.delete = async (req, res) => {
 
 module.exports.upload = async (req, res) => {
     try {
+        console.log(req.file);
+        const sessionId = req.params.id;
         if (!req.file) {
+            await Sessions.update({ 
+                status: "entered" }, {
+                where: { session_id: sessionId } 
+            });
             throw new Error("File not received.");
         }
 
-        const sessionId = req.params.id;
         const row = await Sessions.update({ 
-            status: "uploaded" }, {
+            status: "uploaded",
+            file_name: req.file.originalname,
+            file_format: req.file.mimetype.replace("video/", "") 
+        }, {
             where: { session_id: sessionId } 
         });
 
@@ -87,7 +95,7 @@ module.exports.upload = async (req, res) => {
 
 module.exports.download = async (req, res) => {
     try {
-        const sessionId = req.params.id;
+        const sessionId = req.query.id;
         const [row, session] = await Sessions.update({ 
             status: "downloading" }, {
             where: { session_id: sessionId, status: "converted" },
