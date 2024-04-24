@@ -12,13 +12,14 @@ const maxFileSize = 500*1024*1024;
 
 export default function MainPage() {
 
-    let sessionStatus = "new";
     const [cookies, setCookie, removeCookie] = useCookies(['sessionId']);
     const [uploadFile, setUploadFile] = useState({});
     const [fileValid, setFileValid] = useState(false);
     const [fileError, setFileError] = useState("");
     const [jobProgress, setJobProgress] = useState(0);
-    const [inProgress, setInProgress] = useState(false);
+    const [status, setStatus] = useState("new");
+    const [fileName, setFileName] = useState("");
+    let statusTimer = null;
 
     const getSessionId = async () => {
         try {
@@ -28,8 +29,7 @@ export default function MainPage() {
             }
             const resBody = await res.json();
             setCookie('sessionId', resBody.id, {maxAge: 3600});
-        }
-        catch (err) {
+        } catch (err) {
             console.error(err);
         }
     }
@@ -41,12 +41,26 @@ export default function MainPage() {
                 throw new Error('Getting status failed');
             }
             const resBody = await res.json();
-            sessionStatus = resBody.status;
-            console.log(sessionStatus);
-        }
-        catch (err) {
+            setStatus(resBody.status);
+            if (resBody.status === "converted") {
+                clearInterval(statusTimer);
+                setFileName(resBody.filename);
+            } else if (resBody.status === "converting") {
+                setJobProgress(100);
+                if (!statusTimer) {
+                    startStatusTimer();
+                }
+            }
+            console.log(resBody.status);
+        } catch (err) {
             console.error(err);
         }
+    }
+
+    const startStatusTimer = () => {
+        statusTimer = setInterval( async () => {
+            await getSessionStatus();
+        }, 1000);
     }
 
     const updateFile = (e) => {
@@ -68,7 +82,7 @@ export default function MainPage() {
         if (!fileValid) {
             return;
         }
-        setInProgress(true);
+        setStatus("uploading");
 
         const formData = new FormData();
         formData.append(cookies.sessionId, uploadFile);
@@ -79,8 +93,8 @@ export default function MainPage() {
             setJobProgress(progress);
         });
         xhr.addEventListener("load", () => {
-            setInProgress(false);
-
+            setStatus("uploaded");
+            startStatusTimer();
         });
         xhr.addEventListener("error", () => {
             throw new Error("upload failed");
@@ -96,45 +110,50 @@ export default function MainPage() {
                 throw new Error('Video deletion failed');
             }
             removeCookie('sessionId', { path: '/' });
-        }
-        catch (err) {
+            setStatus("new");
+        } catch (err) {
             console.error(err);
         }
     }
 
-    if (cookies.sessionId) {
-        getSessionStatus();
-    } else {
+    if (!cookies.sessionId) {
         getSessionId();
-    }
+    } 
+    
+    // init status
+    useEffect( () => { getSessionStatus(); }, []);
 
     return (
         <section className="main-sec">
-            <div className='top-bar'>LOGO</div>
+            <div className='top-bar'>{cookies.sessionId + ':' + status}</div>
             <div className="container">
                 <h1 className="heading">Spatial Tool</h1>
                 <p className="description">Convert Side-By-Side 3D video to Spatial video</p>
                 <div className='anime-zone'>
-                    <Form.Group className={ !inProgress? 'dropbox':'hide' }>
+                    <Form.Group className={ ['entered', 'new'].includes(status)? 'dropbox':'hide' }>
                         <Form.Label>
                             Maximum size: 500 MB<br/>
                             {"Support formats: " + supportFormats.join(',')}
                         </Form.Label>
-                        <Form.Control type="file" onChange={updateFile}  isInvalid={!fileValid}/>
+                        <Form.Control type="file" onChange={updateFile} isInvalid={!fileValid}/>
                         <Form.Control.Feedback type="invalid"> {fileError} </Form.Control.Feedback>
                     </Form.Group>
-                    <div className={ inProgress? 'job-status':'hide' }>
-                        {sessionStatus}
+                    <div className={ ['uploading', 'uploaded', 'converting'].includes(status)? 'job-status':'hide' }>
+                        {status}
                         <ProgressBar animated now={jobProgress} />
                     </div>
+                    <div className={ status === 'converted'? 'job-done' : 'hide'}>
+                        Please download or delete the video:<br/>
+                        {fileName}
+                    </div>
                 </div>
-                <Button className="button" variant="primary" onClick={handleUpload} disabled={!fileValid}>
+                <Button className="button" variant="primary" onClick={handleUpload} disabled={!['entered', 'new'].includes(status)}>
                     Upload
                 </Button>
-                <Button href={API_GET_VIDEO + cookies.sessionId} className="button" variant="success" disabled={!fileValid}>
+                <Button href={API_GET_VIDEO + cookies.sessionId} className="button" variant="success" disabled={status!=="converted"}>
                     Download
                 </Button>
-                <Button className="button" variant="danger" onClick={handleDelete} disabled={!fileValid}>
+                <Button className="button" variant="danger" onClick={handleDelete} disabled={status!=="converted"}>
                     Delete
                 </Button>
                 <div className="note">
