@@ -27,7 +27,9 @@ module.exports.idStatus = async (req, res) => {
         const sessionId = req.query.id;
         const session = await Sessions.findOne({ where: { session_id: sessionId } });
         if (session) {
-            res.json({ status: session.status });
+            res.json({ 
+                status: session.status,
+                filename: session.status === "converted" ? session.file_name : "" });
         } else {
             throw new Error("Id status not valid.");
         }
@@ -73,7 +75,7 @@ module.exports.upload = async (req, res) => {
 
         const row = await Sessions.update({ 
             status: "uploaded",
-            file_name: req.file.originalname,
+            file_name: "spatial-" + req.file.originalname,
             file_format: req.file.mimetype.replace("video/", "") 
         }, {
             where: { session_id: sessionId } 
