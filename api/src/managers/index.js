@@ -58,7 +58,7 @@ eventEmitter.on('convert', async (sessionId) => {
         if (row1 === 0) {
             throw new Error("DB update status to converting error")
         }
-        
+        await new Promise(resolve => setTimeout(resolve, 10000));
         // TODO: transcoding
         fs.copyFileSync(uploadDir + sessionId, uploadDir + sessionId + '-done');
 
