@@ -24,8 +24,7 @@ module.exports.upload = async (req, res, next) => {
             status: "uploading" }, {
             where: { session_id: sessionId, status: "entered" } 
         });
-
-        if (row === 0) {
+        if (!row[0]) {
             throw new Error("Id is not valid or file uploaded already");
         }
         

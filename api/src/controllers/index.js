@@ -81,7 +81,7 @@ module.exports.upload = async (req, res) => {
             where: { session_id: sessionId } 
         });
 
-        if (row === 0) {
+        if (!row[0]) {
             throw new Error("Id status updating failed.");
         }
 
@@ -103,7 +103,7 @@ module.exports.download = async (req, res) => {
             returning: true 
         });
 
-        if (row === 0) {
+        if (!row[0]) {
             throw new Error("Id not ready for download.");
         }
 

@@ -28,7 +28,7 @@ module.exports.sessionManager = new cron.CronJob(" * * * * * ", async () => {
                     session_id: db.sequelize.literal('id') }, {
                     where: { session_id: session.session_id, status: session.status } 
                 });
-                if (row === 0) {
+                if (!row[0]) {
                     console.log(`${session.session_id} moved status`);
                     continue;
                 }
@@ -55,7 +55,7 @@ eventEmitter.on('convert', async (sessionId) => {
             status: "converting" }, {
             where: { session_id: sessionId } 
         });
-        if (row1 === 0) {
+        if (!row1[0]) {
             throw new Error("DB update status to converting error")
         }
         await new Promise(resolve => setTimeout(resolve, 10000));
@@ -68,7 +68,7 @@ eventEmitter.on('convert', async (sessionId) => {
             status: "converted" }, {
             where: { session_id: sessionId } 
         });
-        if (row2 === 0) {
+        if (!row2[0]) {
             throw new Error("DB update status to converted error")
         }
     } catch(err) {
